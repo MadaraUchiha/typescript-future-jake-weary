@@ -1,50 +1,147 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+        <title>reveal.js</title>
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/black.css">
 
-		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+        <!-- Theme used for syntax highlighting of code -->
+        <link rel="stylesheet" href="lib/css/zenburn.css">
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
-		</div>
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+        <style>
+            code {
+                font-size: .8em !important;
+                line-height: 1.2 !important;
+            }
+            code span[title] {
+                border-bottom: 3px red dotted;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <section>
+                    <h2>Deep Dive into Generics and Type Inference</h2>
+                </section>
+                <section>
+                    <h3>A bit about myself</h3>
+                    <ul>
+                        <li class="fragment">I am Dor, long time lurker, first time speaker.</li>
+                        <li class="fragment">
+                            <img src="img/nala.jpeg" alt="Nala" style="float: right; max-width: 50%; padding-left: 10px"> 
+                            this is Nala, my dog. <span class="fragment">She's ready for winter.</span></li>
+                        <li class="fragment">I'm a moderator on Stack Overflow, where I go by the name <a href="https://stackoverflow.com/users/871050/madara-uchiha">Madara Uchiha</a></li>
+                        <li class="fragment">I've been working with TypeScript for a relatively short while, but being so intuitive and so helpful, I picked up on it quickly.</li>
+                    </ul>
+                </section>
+                <section>
+                    <h3>We'll cover</h3>
+                    <ol>
+                        <li>What generics are.</li>
+                        <li>What type inference is</li>
+                        <li>How do the two mix</li>
+                    </ol>
+                </section>
+                <section>
+                    <h2>We're short on time, so please save your questions for the end/break</h2>
+                </section>
+                <section>
+                    <section>
+                        <h3>What are generics?</h3>
+                        <p>Generic types help us define a certain structure/class/function once, and have it work for multiple types <em>without losing type information</em></p>
+                        <p>For example:</p>
+    <pre><code data-trim data-noescape class="typescript">
+//Not bad, but only works for numbers
+function numberIdentity(arg: number): number {
+    return arg;
+} // const foo = identity(42); // typeof foo = number
+    <span class="fragment">
+//Now works for any type, but the return type is "any", type information lost.
+function anyIdentity(arg: any): any {
+    return arg;
+} // const foo = identity(42); // typeof foo = any
+    </span><span class="fragment">
+//Now accepts any type, and returns the same type, type information preserved.
+function identity&lt;T>(arg: T): T {
+    return arg;
+} // typeof foo = identity&lt;string>('hello'); // typeof foo = string
+    </span>
+    </code></pre>
+                    </section>
+                    <section>
+                        <h3>Generics work for classes and interfaces too</h3>
+                        <pre><code data-trim data-noescape class="typescript">
+class List&lt;T> {
+    constructor(items: T[]) { ... }
+    public add(item: T): void { ... }
+    public remove(item: T): void { ... }
+    public get(index: number): T { ... }    
+    public map&lt;U>(fn: (el: T, i: number, coll: List&lt;T>)): List&lt;U>
+}
+                            </code></pre>
 
-		<script>
-			// More info https://github.com/hakimel/reveal.js#configuration
-			Reveal.initialize({
-				history: true,
+                            <p>Knowing when to add the type parameter on the class/interface and when on the member is sort of an artform.</p>
+                        <aside class="notes">
+                            <ul>
+                                <li>You can see that when used on a class/interface, the generic types are visible to all class/interface members</li>
+                            </ul>
+                        </aside>
+                    </section>
+                    <section>
+                        <h3>Working with generics</h3>
+                        <p>Let's say we want a logging identity function</p>
+                        <pre><code data-trim data-noescape class="typescript">
+function loggingIdentity&lt;T>(arg: T): T {
+    console.info(arg.<span title="Property 'length' does not exist on type 'T'.">length</span>); 
+    return arg;
+}
+                            </code></pre>
+                        <p>TypeScript can't prove that type T has length, for example, number</p>
+                        <pre><code data-trim data-noescape class="typescript">
+interface HasLength {
+    length: number;
+}
 
-				// More info https://github.com/hakimel/reveal.js#dependencies
-				dependencies: [
-					{ src: 'plugin/markdown/marked.js' },
-					{ src: 'plugin/markdown/markdown.js' },
-					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
-				]
-			});
-		</script>
-	</body>
+function loggingIdentity&lt;T<strong> extends HasLength</strong>>(arg: T): T {
+    console.info(arg.length);
+    return arg;
+}
+
+                        </code></pre>
+                    </section>
+                </section>
+            </div>
+        </div>
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+            // More info https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                history: true,
+
+                // More info https://github.com/hakimel/reveal.js#dependencies
+                dependencies: [
+                    { src: 'plugin/markdown/marked.js' },
+                    { src: 'plugin/markdown/markdown.js' },
+                    { src: 'plugin/notes/notes.js', async: true },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+                ]
+            });
+        </script>
+    </body>
 </html>
