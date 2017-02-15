@@ -28,6 +28,15 @@
             }
             code span[title] {
                 border-bottom: 3px red dotted;
+                cursor: help
+            }
+            code span[title]::after {
+                content: attr(title);
+                position: absolute;
+                bottom: -10px
+            }
+            ol {
+                min-width: 50%;
             }
         </style>
     </head>
@@ -42,15 +51,15 @@
                     <ul>
                         <li class="fragment">I am Dor, long time lurker, first time speaker.</li>
                         <li class="fragment">
-                            <img src="img/nala.jpeg" alt="Nala" style="float: right; max-width: 50%; padding-left: 10px"> 
+                            <img src="img/nala.jpeg" alt="Nala" style="float: right; max-width: 50%; margin-left: 10px"> 
                             this is Nala, my dog. <span class="fragment">She's ready for winter.</span></li>
                         <li class="fragment">I'm a moderator on Stack Overflow, where I go by the name <a href="https://stackoverflow.com/users/871050/madara-uchiha">Madara Uchiha</a></li>
-                        <li class="fragment">I've been working with TypeScript for a relatively short while, but being so intuitive and so helpful, I picked up on it quickly.</li>
+                        <li class="fragment">I've been working with TypeScript for a relatively short while, but it being so intuitive and helpful, I picked up on it quickly.</li>
                     </ul>
                 </section>
                 <section>
                     <h3>We'll cover</h3>
-                    <ol>
+                    <ol style="white-space: nowrap">
                         <li>What generics are.</li>
                         <li>What type inference is</li>
                         <li>How do the two mix</li>
@@ -78,7 +87,7 @@ function anyIdentity(arg: any): any {
 //Now accepts any type, and returns the same type, type information preserved.
 function identity&lt;T>(arg: T): T {
     return arg;
-} // typeof foo = identity&lt;string>('hello'); // typeof foo = string
+} // const foo = identity&lt;string>('hello'); // typeof foo = string
     </span>
     </code></pre>
                     </section>
@@ -122,6 +131,119 @@ function loggingIdentity&lt;T<strong> extends HasLength</strong>>(arg: T): T {
 }
 
                         </code></pre>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h3>Type Inference</h3>
+                        <p class="fragment">Wouldn't it be nice if you didn't have to explicitly state types everywhere?</p>
+                        <p class="fragment">Enter: Type Inference!</p>
+                        <p class="fragment">Type inference is a feature of the compiler where it <em>infers</em> the types of 
+                            values in your program, without you having to specify them!</p>
+                    </section>
+                    <section>
+                        <h3>Kinds of Type Inference</h3>
+                        <ol>
+                            <li>Assignment:
+                                <pre><code data-trim data-noescape class="typescript">
+    let x = 5;
+    let y = 'hello';
+
+    <span title="Type 'string' is not assignable to type 'number'.">x</span> = y;
+                                </code></pre>
+                            </li> 
+                            <li>
+                                Return value - Function's type is inferred based on it's return value
+                                <pre><code data-trim data-noescape class="typescript">
+    function add(a: number, b: number) {
+        return a + b;
+    }
+
+    let x = add(5, 6); // type of x is number
+                                </code></pre>
+                            </li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h3>Kinds of Type Inference</h3>
+                        <ol>
+                            <li>Structuring:
+                                <pre><code data-trim data-noescape class="typescript">
+    let x = { foo: 42, bar: 43 };
+    <span title="Type '''hello''' is not assignable to type 'number'.">x.foo</span> = 'hello';
+                                </code></pre>
+                            </li> 
+                            <li>
+                                Destructuring:
+                                <pre><code data-trim data-noescape class="typescript">
+    let {bar} = x;
+    <span title="Type '''hello''' is not assignable to type 'number'.">bar</span> = 'hello';
+                                </code></pre>
+                            </li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h3>Type Inference is powerful</h3>
+                        <p>Type inference is one of the greatest strengths of TypeScript.</p>
+                        <p>It allows you to take entire JavaScript files and gain instant benefits from them, without writing a single type annotation.</p>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h3>Inferred Generics</h3>
+                        <p>Remember this?</p>
+                        <pre><code data-trim data-noescape class="typescript">
+function identity&lt;T>(arg: T): T {
+    return arg;
+} // const foo = identity&lt;string>('hello'); // typeof foo = string
+    </code></pre>
+                        <p>What if I told you... you didn't need to tell it which type it takes?</p>
+                        <pre><code data-trim data-noescape class="typescript">
+const foo = identity(42); // type of foo is number!
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h3>TypeScript infers type parameters too!</h3>
+                        <p>TypeScript will do its best to infer the type matching the passed parameters.</p>
+<pre><code data-trim data-noescape class="typescript">
+function makeObj&lt;T, U, V>(foo: T, bar: U, baz: V) {
+    return {foo, bar, baz};
+}
+
+const obj = makeObj('hello', 42, true); 
+// type of obj = {foo: string, bar: number, baz: boolean}
+    </code></pre>
+                    </section>
+                    <section>
+                        <h3>Are you ready?</h3>
+                        <pre><code data-trim data-noescape class="typescript fragment">
+// type Pick&lt;T, K extends keyof T> = {
+//     [P in K]: T[P];
+// }
+function pick&lt;T, K extends keyof T>(obj: T, keys: K[]): Pick&lt;T, K> {
+    // ...
+}
+
+const employee = {name: 'Madara', age: 125, profession: 'Developer'};
+const person = pick(employee, ['name', 'age']); // {name: string, age: number}
+                        </code></pre>
+                        <pre><code data-trim data-noescape class="typescript fragment">
+interface ReactWrapper {
+    &lt;Props, CompCtr extends ComponentClass&lt;Props>>(cls: CompCtr): CompCtr;
+}
+
+function someWrapper(): ReactWrapper {
+    // return decorator here
+    // a decorator is a function that accepts a class and returns a class
+}
+
+const WrappedComponent = someWrapper(
+    class PersonComp extends Component&lt;{name: string, age: number}, void> {
+        // ...
+    }
+)
+
+// WrappedComponent accepts the same props</code></pre>
                     </section>
                 </section>
             </div>
