@@ -26,17 +26,35 @@
                 font-size: .8em !important;
                 line-height: 1.2 !important;
             }
-            code span[title] {
+            code span[data-title] {
                 border-bottom: 3px red dotted;
-                cursor: help
+                cursor: help;
+                position: relative;
             }
-            code span[title]::after {
-                content: attr(title);
+            code span[data-title]::after {
+                padding: 5px;
+                content: attr(data-title);
                 position: absolute;
-                bottom: -10px
+                bottom: calc(100% - 5px);
+                left: calc(-50%);
+                width: 500px;
+                white-space: normal;
+                background: hsla(0, 0%, 0%, .9);
+                border: 2px solid hsla(0, 0%, 80%, 1);
+                box-shadow: 2px 2px 2px hsla(0, 0%, 0%, .3);
+                opacity: 0;
+                pointer-events: none;
+                transition: all .3s ease-in-out;
+            }
+            code span[data-title]:hover::after {
+                opacity: 1;
+                transform: translateY(-10px);
             }
             ol {
                 min-width: 50%;
+            }
+            .reveal pre, .reveal pre code {
+                overflow: visible;
             }
         </style>
     </head>
@@ -115,7 +133,7 @@ class List&lt;T> {
                         <p>Let's say we want a logging identity function</p>
                         <pre><code data-trim data-noescape class="typescript">
 function loggingIdentity&lt;T>(arg: T): T {
-    console.info(arg.<span title="Property 'length' does not exist on type 'T'.">length</span>); 
+    console.info(arg.<span data-title="Property 'length' does not exist on type 'T'.">length</span>); 
     return arg;
 }
                             </code></pre>
@@ -149,7 +167,7 @@ function loggingIdentity&lt;T<strong> extends HasLength</strong>>(arg: T): T {
     let x = 5;
     let y = 'hello';
 
-    <span title="Type 'string' is not assignable to type 'number'.">x</span> = y;
+    <span data-title="Type 'string' is not assignable to type 'number'.">x</span> = y;
                                 </code></pre>
                             </li> 
                             <li>
@@ -170,14 +188,14 @@ function loggingIdentity&lt;T<strong> extends HasLength</strong>>(arg: T): T {
                             <li>Structuring:
                                 <pre><code data-trim data-noescape class="typescript">
     let x = { foo: 42, bar: 43 };
-    <span title="Type '''hello''' is not assignable to type 'number'.">x.foo</span> = 'hello';
+    <span data-title="Type '''hello''' is not assignable to type 'number'.">x.foo</span> = 'hello';
                                 </code></pre>
                             </li> 
                             <li>
                                 Destructuring:
                                 <pre><code data-trim data-noescape class="typescript">
     let {bar} = x;
-    <span title="Type '''hello''' is not assignable to type 'number'.">bar</span> = 'hello';
+    <span data-title="Type '''hello''' is not assignable to type 'number'.">bar</span> = 'hello';
                                 </code></pre>
                             </li>
                         </ol>
@@ -226,6 +244,7 @@ function pick&lt;T, K extends keyof T>(obj: T, keys: K[]): Pick&lt;T, K> {
 
 const employee = {name: 'Madara', age: 125, profession: 'Developer'};
 const person = pick(employee, ['name', 'age']); // {name: string, age: number}
+const oops = pick(employee, <span data-title=" Type '''height''' is not assignable to type '''name'' | ''age'' | ''profession'''.">['name', 'height']</span>)
                         </code></pre>
                         <pre><code data-trim data-noescape class="typescript fragment">
 interface ReactWrapper {
