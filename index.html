@@ -234,6 +234,13 @@ const obj = makeObj('hello', 42, true);
     </code></pre>
                     </section>
                     <section>
+                        <aside class="notes">
+                            <ul>
+                                <li>The idea of the first example is the second inferred parameter, which relies on the first</li>
+                                <li>The idea of the second example is passing the first inferred parameter to the second</li>
+                                <li>A decorator is a function that accepts a class and returns a class</li>
+                            </ul>
+                        </aside>
                         <h3>Are you ready?</h3>
                         <pre><code data-trim data-noescape class="typescript fragment">
 // type Pick&lt;T, K extends keyof T> = {
@@ -254,7 +261,6 @@ interface ReactWrapper {
 
 function someWrapper(): ReactWrapper {
     // return decorator here
-    // a decorator is a function that accepts a class and returns a class
 }
 
 const WrappedComponent = someWrapper(
@@ -264,6 +270,23 @@ const WrappedComponent = someWrapper(
 )
 
 // WrappedComponent accepts the same props</code></pre>
+                    </section>
+                    <section>
+                        <pre><code data-trim data-noescape class="typescript fragment">
+interface MyRecord&lt;T> extends Readonly&lt;T> { // Possible since 2.2!
+    get&lt;K extends keyof T>(key: K): T[K];
+    set&lt;K extends keyof T>(key: K, newValue: T[K]): MyRecord&lt;T>;
+}
+
+declare function MyRecord&lt;T>(obj: T): MyRecord&lt;T>;
+
+const record = MyRecord({ foo: 0, bar: 'hello' });
+const foo = record.get('foo'); // number
+const bar = record.bar; // string
+
+const newRecord = record.set('foo', <span data-title="Type '''hello''' is not assignable to type 'number'.">'hello'</span>);
+record.bar = <span data-title="Cannot assign to 'bar' because it is a constant or a read-only property.">'hello';
+</code></pre>
                     </section>
                 </section>
                 <section>
