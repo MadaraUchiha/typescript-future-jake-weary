@@ -81,7 +81,7 @@
                     <ol style="white-space: nowrap">
                         <li>What generics are.</li>
                         <li>What type inference is</li>
-                        <li>How do the two mix</li>
+                        <li>How the two mix</li>
                     </ol>
                 </section>
                 <section>
@@ -90,18 +90,19 @@
                 <section>
                     <section>
                         <h3>What are generics?</h3>
-                        <p>Generic types help us define a certain structure/class/function once, and have it work for multiple types <em>without losing type information</em></p>
+                        <p>Generic types help us define a certain structure/class/function once, and have it work for a range of types <em>without losing type information</em></p>
                         <p>For example:</p>
     <pre><code data-trim data-noescape class="typescript">
-//Not bad, but only works for numbers
+<span class="fragment">//Not bad, but only works for numbers
 function numberIdentity(arg: number): number {
     return arg;
-} // const foo = identity(42); // typeof foo = number
+} // const foo = numberIdentity(42); // typeof foo = number
+</span>
     <span class="fragment">
 //Now works for any type, but the return type is "any", type information lost.
 function anyIdentity(arg: any): any {
     return arg;
-} // const foo = identity(42); // typeof foo = any
+} // const foo = anyIdentity(42); // typeof foo = any
     </span><span class="fragment">
 //Now accepts any type, and returns the same type, type information preserved.
 function identity&lt;T>(arg: T): T {
@@ -125,6 +126,7 @@ class List&lt;T> {
                             <p>Knowing when to add the type parameter on the class/interface and when on the member is sort of an artform.</p>
                         <aside class="notes">
                             <ul>
+                                <li>The map() function has its own generic parameter.</li>
                                 <li>You can see that when used on a class/interface, the generic types are visible to all class/interface members</li>
                             </ul>
                         </aside>
@@ -139,7 +141,8 @@ function loggingIdentity&lt;T>(arg: T): T {
 }
                             </code></pre>
                         <p>TypeScript can't prove that type T has length, for example, number</p>
-                        <pre><code data-trim data-noescape class="typescript">
+                        <div class="fragment">
+                            <pre><code data-trim data-noescape class="typescript">
 interface HasLength {
     length: number;
 }
@@ -148,7 +151,22 @@ function loggingIdentity&lt;T<strong> extends HasLength</strong>>(arg: T): T {
     console.info(arg.length);
     return arg;
 }
+                            </code></pre>
+                        </div>
+                    </section>
+                    <section>
+                        <h3>Using one type parameter from another</h3>
+                        <pre><code data-trim data-noescape class="typescript fragment">
+// type Pick&lt;T, K extends keyof T> = {
+//     [P in K]: T[P];
+// }
+function pick&lt;T, K extends keyof T>(obj: T, keys: K[]): Pick&lt;T, K> {
+    // ...
+}
 
+const employee = {name: 'Madara', age: 125, profession: 'Developer'};
+const person = pick(employee, ['name', 'age']); // {name: string, age: number}
+const oops = pick(employee, <span data-title=" Type '''height''' is not assignable to type '''name'' | ''age'' | ''profession'''.">['name', 'height']</span>);
                         </code></pre>
                     </section>
                 </section>
@@ -172,7 +190,7 @@ function loggingIdentity&lt;T<strong> extends HasLength</strong>>(arg: T): T {
                                 </code></pre>
                             </li> 
                             <li>
-                                Return value - Function's type is inferred based on it's return value
+                                Return value - Function's type is inferred based on its return value
                                 <pre><code data-trim data-noescape class="typescript">
     function add(a: number, b: number) {
         return a + b;
@@ -243,31 +261,19 @@ const obj = makeObj('hello', 42, true);
                         </aside>
                         <h3>Are you ready?</h3>
                         <pre><code data-trim data-noescape class="typescript fragment">
-// type Pick&lt;T, K extends keyof T> = {
-//     [P in K]: T[P];
-// }
-function pick&lt;T, K extends keyof T>(obj: T, keys: K[]): Pick&lt;T, K> {
-    // ...
-}
-
-const employee = {name: 'Madara', age: 125, profession: 'Developer'};
-const person = pick(employee, ['name', 'age']); // {name: string, age: number}
-const oops = pick(employee, <span data-title=" Type '''height''' is not assignable to type '''name'' | ''age'' | ''profession'''.">['name', 'height']</span>)
-                        </code></pre>
-                        <pre><code data-trim data-noescape class="typescript fragment">
 interface ReactWrapper {
     &lt;Props, CompCtr extends ComponentClass&lt;Props>>(cls: CompCtr): CompCtr;
 }
 
-function someWrapper(): ReactWrapper {
+function apiWrapper(...apiNames: string[]): ReactWrapper {
     // return decorator here
 }
 
-const WrappedComponent = someWrapper(
+const WrappedComponent = apiWrapper('foo', 'bar', 'baz')(
     class PersonComp extends Component&lt;{name: string, age: number}, void> {
         // ...
     }
-)
+);
 
 // WrappedComponent accepts the same props</code></pre>
                     </section>
