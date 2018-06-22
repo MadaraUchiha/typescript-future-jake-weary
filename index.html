@@ -22,14 +22,23 @@
         </script>
 
         <style>
+            @font-face {
+                font-family: "Fira Code";
+                src: url("font/FiraCode-Regular.woff2") format("woff2");
+            }
+
             code {
                 font-size: .8em !important;
                 line-height: 1.2 !important;
+                font-family: Fira Code !important;
             }
             code span[data-title] {
-                border-bottom: 3px red dotted;
                 cursor: help;
                 position: relative;
+                border-bottom: 3px gray dotted;
+            }
+            code span.error {
+                border-bottom-color: red;
             }
             code span[data-title]::after {
                 padding: 5px;
@@ -45,6 +54,7 @@
                 opacity: 0;
                 pointer-events: none;
                 transition: all .3s ease-in-out;
+                white-space: pre;
             }
             code span[data-title]:hover::after {
                 opacity: 1;
@@ -62,27 +72,93 @@
         <div class="reveal">
             <div class="slides">
                 <section>
-                    <h2>Deep Dive into Generics and Type Inference</h2>
+                    <h2>TypeScript, the Future... <span class="fragment">and Jake Weary?</span></h2>
                 </section>
                 <section>
                     <h3>A bit about myself</h3>
                     <ul>
-                        <li class="fragment">I am Dor, long time lurker, first time speaker.</li>
+                        <li class="fragment">I am Dor, long time lurker, <s>first</s> second time speaker.</li>
                         <li class="fragment">
-                            <img src="img/nala.jpeg" alt="Nala" style="float: right; max-width: 50%; margin-left: 10px"> 
-                            this is Nala, my dog. <span class="fragment">She's ready for winter.</span></li>
+                            <img src="img/summer-nala.jpg" alt="Nala" style="float: right; max-width: 50%; margin-left: 10px"> 
+                            this is Nala, my dog. <span class="fragment">She's ready for summer.</span></li>
                         <li class="fragment">I'm a moderator on Stack Overflow, where I go by the name <a href="https://stackoverflow.com/users/871050/madara-uchiha">Madara Uchiha</a></li>
-                        <li class="fragment">I've been working with TypeScript for a relatively short while, but it being so intuitive and helpful, I picked up on it quickly.</li>
+                        <li class="fragment">I've been working with TypeScript for the past year and a half, and loving every moment of it.</li>
                         <li class="fragment">Did I forget to record my screen? (of course I did)</li>
                     </ul>
                 </section>
                 <section>
                     <h3>We'll cover</h3>
                     <ol style="white-space: nowrap">
-                        <li>What generics are.</li>
-                        <li>What type inference is</li>
-                        <li>How the two mix</li>
+                        <li>Cool TypeScript features we have today</li>
+                        <li>Cool TypeScript feature we'll have tomorrow<sup title="For some definitions of 'tomorrow'">*</sup>!</li>
+                        <li>Who is the myserious and elusive Jake Weary?</li>
                     </ol>
+                </section>
+                <section id="today">
+                    <section>
+                        <h3>Cool TypeScript features we have today</h3>
+                        <ol style="white-space: nowrap">
+                            <li>Mapped Types</li>
+                            <li>Conditional Types</li>
+                            <li>Generic Inference (not to be confused with Type Inference)</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h3>Mapped Types</h3>
+                        <p>Mapped types are transformation we can apply onto existing types, to create new types.</p>
+                        <pre class="fragment"><code data-trim data-noescape class="typescript">
+type T0 = { foo: string, bar: number };
+type <span data-title="type T1 = {&#xa;  foo?: string | boolean;&#xa;  bar?: number | boolean;&#xa;}">T1</span> = { [key in T0]?: T0[key] | boolean };
+                        </code></pre>
+                        <p class="fragment">Useful when combined with generics</p>
+                    </section>
+                    <section>
+                        <h3>Mapped Types</h3>
+                        <pre class="fragment"><code data-trim data-noescape class="typescript">
+// All of the following are built-in mapped types, 
+// this is how they're implemented.
+type Partial&lt;T> = { [P in keyof T]?: T[P] };
+type Readonly&lt;T> = { readonly [P in keyof T]: T[P]; };
+type Pick&lt;T, K extends keyof T> = { [P in K]: T[K]; };
+
+type <span data-title="type T2 = { foo?: string; bar?: number; }">T2</span> = Partial&lt;T0>;
+type <span data-title="type T3 = { &#xa;  readonly foo: string;&#xa;  readonly bar: number;&#xa;}">T3</span> = Readonly&lt;T0>;
+type <span data-title="type T4 = { bar: number; }">T4</span> = Pick&lt;T0, 'bar'>;
+                        </code></pre>
+                        <p class="fragment">You can easily make your own to suit your needs!</p>
+                    </section>
+                    <section>
+                        <h3>Conditional Types</h3>
+                        <pre><code data-trim data-noescape class="typescript">
+type T5&lt;T> = T extends number ? string : boolean;
+type <span data-title="type T6 = string">T6</span> = T5&lt;6>;
+type <span data-title="type T7 = boolean">T7</span> = T5&lt;'hello'>;
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h3>Conditional Types</h3>
+                        <p>Useful for making more advanced type mappings</p>
+                        <pre class="fragment"><code data-trim data-noescape class="typescript">
+// Remove types from T that are assignable to U
+type Diff&lt;T, U> = T extends U ? never : T; 
+// Remove types from T that are not assignable to U
+type Filter&lt;T, U> = T extends U ? T : never;
+
+type <span data-title="type T8 = 'b' | 'd'">T8</span> = Diff&lt;'a' | 'b' | 'c' | 'd', 'a' | 'c' | 'f'>;
+type <span data-title="type T9 = 'a' | 'c'">T9</span> = Filter&lt;'a' | 'b' | 'c' | 'd', 'a' | 'c' | 'f'>;
+                        </code></pre>
+                        <div class="fragment">
+                            <p>which in turn can become even more useful</p>
+                            <pre class="fragment"><code data-trim data-noescape class="typescript">
+// Remove null and undefined from T
+type NonNullable&lt;T> = Diff&lt;T, null | undefined>;
+type OmitNulls&lt;T> = { [key in keyof T]: NonNullable&lt;T[key]> };
+
+type T11 = { foo: string | null, bar: number | null };
+type <span data-title="type T12 = { foo: string; bar: number; }">T12</span> = OmitNulls&lt;T11>;
+                            </code></pre>
+                        </div>
+                    </section>
                 </section>
                 <!--<section>
                     <h2>We're short on time, so please save your questions for the end/break</h2>
