@@ -26,7 +26,9 @@
                 font-family: "Fira Code";
                 src: url("font/FiraCode-Regular.woff2") format("woff2");
             }
-
+            h3 code {
+                text-transform: initial;
+            }
             code {
                 font-size: .8em !important;
                 line-height: 1.2 !important;
@@ -45,7 +47,8 @@
                 content: attr(data-title);
                 position: absolute;
                 bottom: calc(100% - 5px);
-                left: calc(-50%);
+                /* left: calc(-50%); */
+                left: 0;
                 width: 500px;
                 white-space: normal;
                 background: hsla(0, 0%, 0%, .9);
@@ -59,6 +62,9 @@
             code span[data-title]:hover::after {
                 opacity: 1;
                 transform: translateY(-10px);
+            }
+            code a {
+                text-decoration: underline !important;
             }
             ol {
                 width: 100%;
@@ -76,13 +82,13 @@
                 </section>
                 <section>
                     <h3>A bit about myself</h3>
-                    <ul>
+                    <ul style="font-size: 0.9em;">
                         <li class="fragment">I am Dor, long time lurker, <s>first</s> second time speaker.</li>
                         <li class="fragment">
                             <img src="img/summer-nala.jpg" alt="Nala" style="float: right; max-width: 50%; margin-left: 10px"> 
                             this is Nala, my dog. <span class="fragment">She's ready for summer.</span></li>
                         <li class="fragment">I'm a moderator on Stack Overflow, where I go by the name <a href="https://stackoverflow.com/users/871050/madara-uchiha">Madara Uchiha</a></li>
-                        <li class="fragment">I've been working with TypeScript for the past year and a half, and loving every moment of it.</li>
+                        <li class="fragment">I've been working for <a target="_blank" href="https://tipranks.com/jobs">TipRanks</a> with TypeScript for the past year and a half, and am loving every moment of it.</li>
                         <li class="fragment">Did I forget to record my screen? (of course I did)</li>
                     </ul>
                 </section>
@@ -159,216 +165,141 @@ type <span data-title="type T12 = { foo: string; bar: number; }">T12</span> = Om
                             </code></pre>
                         </div>
                     </section>
-                </section>
-                <!--<section>
-                    <h2>We're short on time, so please save your questions for the end/break</h2>
-                </section>-->
-                <section>
                     <section>
-                        <h3>What are generics?</h3>
-                        <p>Generic types help us define a certain structure/class/function once, and have it work for a range of types <em>without losing type information</em></p>
-                        <p>For example:</p>
-    <pre><code data-trim data-noescape class="typescript">
-<span class="fragment">//Not bad, but only works for numbers
-function numberIdentity(arg: number): number {
-    return arg;
-} // const foo = numberIdentity(42); // typeof foo = number
-</span>
-    <span class="fragment">
-//Now works for any type, but the return type is "any", type information lost.
-function anyIdentity(arg: any): any {
-    return arg;
-} // const foo = anyIdentity(42); // typeof foo = any
-    </span><span class="fragment">
-//Now accepts any type, and returns the same type, type information preserved.
-function identity&lt;T>(arg: T): T {
-    return arg;
-} // const foo = identity&lt;string>('hello'); // typeof foo = string
-    </span>
-    </code></pre>
-                    </section>
-                    <section>
-                        <h3>Generics work for classes and interfaces too</h3>
+                        <h3>Generic Inference in Conditional Types</h3>
                         <pre><code data-trim data-noescape class="typescript">
-class List&lt;T> {
-    constructor(items: T[]) { ... }
-    public add(item: T): void { ... }
-    public remove(item: T): void { ... }
-    public get(index: number): T { ... }    
-    public map&lt;U>(fn: (el: T, i: number, coll: List&lt;T>)): List&lt;U>
-}
-                            </code></pre>
+type Awaited&lt;T> = T extends Promise&lt;infer R> ? R : T;
 
-                            <p>Knowing when to add the type parameter on the class/interface and when on the member is sort of an artform.</p>
-                        <aside class="notes">
-                            <ul>
-                                <li>The map() function has its own generic parameter.</li>
-                                <li>You can see that when used on a class/interface, the generic types are visible to all class/interface members</li>
-                            </ul>
-                        </aside>
-                    </section>
-                    <section>
-                        <h3>Working with generics</h3>
-                        <p>Let's say we want a logging identity function</p>
-                        <pre><code data-trim data-noescape class="typescript">
-function loggingIdentity&lt;T>(arg: T): T {
-    console.info(arg.<span data-title="Property 'length' does not exist on type 'T'.">length</span>); 
-    return arg;
-}
-                            </code></pre>
-                        <p>TypeScript can't prove that type T has length, for example, number</p>
-                        <div class="fragment">
-                            <pre><code data-trim data-noescape class="typescript">
-interface HasLength {
-    length: number;
-}
-
-function loggingIdentity&lt;T<strong> extends HasLength</strong>>(arg: T): T {
-    console.info(arg.length);
-    return arg;
-}
-                            </code></pre>
-                        </div>
-                    </section>
-                    <section>
-                        <h3>Using one type parameter from another</h3>
-                        <pre><code data-trim data-noescape class="typescript fragment">
-// type Pick&lt;T, K extends keyof T> = {
-//     [P in K]: T[P];
-// }
-function pick&lt;T, K extends keyof T>(obj: T, keys: K[]): Pick&lt;T, K> {
-    // ...
-}
-
-const employee = {name: 'Madara', age: 125, profession: 'Developer'};
-const person = pick(employee, ['name', 'age']); // {name: string, age: number}
-const oops = pick(employee, <span data-title=" Type '''height''' is not assignable to type '''name'' | ''age'' | ''profession'''.">['name', 'height']</span>);
+type <span data-title="type T12 = number">T12</span> = Awaited&lt;Promise&lt;number>>;
+type <span data-title="type T13 = string">T13</span> = Awaited&lt;string>;
                         </code></pre>
+                        <p class="fragment">Allows for neat things like the built-in <code>ReturnType&lt;T></code> type.</p>
                     </section>
                 </section>
                 <section>
                     <section>
-                        <h3>Type Inference</h3>
-                        <p class="fragment">Wouldn't it be nice if you didn't have to explicitly state types everywhere?</p>
-                        <p class="fragment">Enter: Type Inference!</p>
-                        <p class="fragment">Type inference is a feature of the compiler where it <em>infers</em> the types of 
-                            values in your program, without you having to specify them!</p>
-                    </section>
-                    <section>
-                        <h3>Type Inference is powerful</h3>
-                        <p>Type inference is one of the greatest strengths of TypeScript.</p>
-                        <p>It allows you to take entire JavaScript files and gain instant benefits from them, without writing a single type annotation.</p>
-                    </section>
-                    <section>
-                        <h3>Kinds of Type Inference</h3>
+                        <h3>Cool TypeScript Features We'll Have in the Future</h3>
                         <ol>
-                            <li>Assignment:
-                                <pre><code data-trim data-noescape class="typescript">
-    let x = 5;
-    let y = 'hello';
-
-    <span data-title="Type 'string' is not assignable to type 'number'.">x</span> = y;
-                                </code></pre>
-                            </li> 
-                            <li>
-                                Return value - Function's type is inferred based on its return value
-                                <pre><code data-trim data-noescape class="typescript">
-    function add(a: number, b: number) {
-        return a + b;
-    }
-
-    let x = add(5, 6); // type of x is number
-                                </code></pre>
-                            </li>
+                            <li>New <code>unknown</code> top type</li>
+                            <li>Tuples types in rest and spread</li>
+                            <li>First class support for <code>propTypes</code> and <code>defaultProps</code></li>
                         </ol>
                     </section>
                     <section>
-                        <h3>Kinds of Type Inference</h3>
-                        <ol start="3">
-                            <li>Structuring:
-                                <pre><code data-trim data-noescape class="typescript">
-    let x = { foo: 42, bar: 43 };
-    <span data-title="Type '''hello''' is not assignable to type 'number'.">x.foo</span> = 'hello';
-                                </code></pre>
-                            </li> 
-                            <li>
-                                Destructuring:
-                                <pre><code data-trim data-noescape class="typescript">
-    let {bar} = x;
-    <span data-title="Type '''hello''' is not assignable to type 'number'.">bar</span> = 'hello';
-                                </code></pre>
-                            </li>
-                        </ol>
+                        <h3>Don't fear the <code>unknown</code></h3>
+                        <ul>
+                            <li><code>unknown</code> is a new top type, like <code>any</code>.</li>
+                            <li><code>unknown</code> is a stricter version of <code>any</code>.</li>
+                            <li>Anything is assignable to <code>unknown</code>, but <code>unknown</code> is not assignable to anything excpet <code>unknown</code> and <code>any</code>.</li>
+                            <li><code>unkown</code> is <em>mostly</em> unusable unless you narrow it first with type guards or assertions.</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h3><code>unknown</code> example</h3>
+                        <pre><code data-trim data-noescape class="typescript">
+let x: unknown; // unknown always considered initialized.
+if (Array.isArray(x)) {
+    <span data-title="let x: any[]">x</span>;
+} else if (x instanceof Promise) {
+    <span data-title="let x: Promise&lt;any&gt;">x</span>;
+} else if (x === true) {
+    <span data-title="let x: unknown">x</span>; // wat, submitted <a target="_blank" href="https://github.com/Microsoft/TypeScript/issues/25172">an issue</a>.
+}
+let <span data-title="let y: string">y</span> = String(x);
+let <span data-title="let z: number">z</span> = Number(x);
+
+<span class="error" data-title="[ts] Object is of type 'unknown'.&#xa;let x: unknown">x</span> > 5;
+<span class="error" data-title="[ts] Object is of type 'unknown'.&#xa;let x: unknown">x</span>.foo;
+<span class="error" data-title="[ts] Object is of type 'unknown'.&#xa;let x: unknown">x</span>[5];
+<span class="error" data-title="[ts] Object is of type 'unknown'.&#xa;let x: unknown">x</span>();
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h3>When to use <code>unknown</code></h3>
+                        <ul>
+                            <li>When you receive something from a third party and don't know its type.</li>
+                            <li>Functions like <code>toJS()</code> or <code>JSON.parse()</code> are likely better off with <code>unknown</code> than with <code>any</code>.</li>
+                            <li>Whenever you don't know about the type of something you have, and want to be reminded to be on your guard.</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h3>Tuple Types in rest and spread</h3>
+                        <pre><code data-trim data-noescape class="typescript">
+                        
+function foo(...args: [number, string, boolean]) {
+    const <span data-title="const x: number">x</span> = args[0];
+    const <span data-title="const y: string">y</span> = args[1];
+    const <span data-title="const z: boolean">z</span> = args[2];
+}
+
+const args: [number, string, boolean] = [42, "hello", true];
+
+foo(...args);
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h3>Tuple Types in generics</h3>
+                        <pre><code data-trim data-noescape class="typescript">
+// declare basically means "assume this function exists with this signature"
+declare function bindFirst&lt;T, U extends any[], V>(
+    f: (x: T, ...args: U) => V, x: T
+): (...args: U) => V;
+
+declare function f3(x: number, y: string, z: boolean): void;
+
+const f2 = bindFirst(f3, 42);  // (y: string, z: boolean) => void
+const f1 = bindFirst(f2, "hello");  // (z: boolean) => void
+const f0 = bindFirst(f1, true);  // () => void
+                        </code></pre>
+                        <p>This is the long awaited solution to variadic types, allows for higher order functions without losing type info!</p>
+                    </section>
+                    <section>
+                        <h3>First class support for <code>propTypes</code> and <code>defaultProps</code></h3>
+                        <pre><code data-trim data-noescape class="typescript">
+class Component extends ReactComponent {
+    static propTypes = {
+        foo: PropTypes.number,
+        bar: PropTypes.node,
+        baz: PropTypes.string.isRequired,
+    };
+    static defaultProps = {
+        foo: 42,
+    }
+}
+
+const a = &lt;Component foo={12} bar="yes" baz="yeah" />;
+const b = &lt;<span class="error" data-title="Missing required prop 'bar'">Component foo={12}</span> />;
+const c = &lt;Component bar="yes" baz="yeah" />;
+const d = &lt;<span class="error" data-title="Invalid prop 'bat'">Component bar="yes" baz="yo" bat="ohno"</span> />;
+// OK because bar isn't marked .isRequired
+const e = &lt;Component foo={12} bar={null} baz="cool" />;
+const f = &lt;Component foo={12} bar="yeah" <span class="error" data-title="Prop 'baz' marked isRequired, cannot be null">baz={null}</span> />;
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h3>First class support for <code>propTypes</code> and <code>defaultProps</code></h3>
+                        <ul>
+                            <li>Details are still not 100% complete, pull request is not merged yet, and discussion is still ongoing</li>
+                            <li>Open questions are how it would handle conflicts with type parameters passed to <code>React.Component</code></li>
+                        </ul>
                     </section>
                 </section>
                 <section>
                     <section>
-                        <h3>Inferred Generics</h3>
-                        <p>Remember this?</p>
-                        <pre><code data-trim data-noescape class="typescript">
-function identity&lt;T>(arg: T): T {
-    return arg;
-} // const foo = identity&lt;string>('hello'); // typeof foo = string
-    </code></pre>
-                        <p>What if I told you... you didn't need to tell it which type it takes?</p>
-                        <pre><code data-trim data-noescape class="typescript">
-const foo = identity(42); // type of foo is number!
-                        </code></pre>
+                        <h3>And now... <span class="fragment">The moment you've all been waiting for...</span></h3>
+                        <h1 style="white-space: nowrap;" class="fragment">Who is Jake Weary?</h1>
                     </section>
                     <section>
-                        <h3>TypeScript infers type parameters too!</h3>
-                        <p>TypeScript will do its best to infer the type matching the passed parameters.</p>
-<pre><code data-trim data-noescape class="typescript">
-function makeObj&lt;T, U, V>(foo: T, bar: U, baz: V) {
-    return {foo, bar, baz};
-}
+                        <h3>Jake Weary</h3>
+                        <img src="img/jake-weary.png" alt="Jake Weary" />
+                        <ul>
+                            <li><strong>Not</strong> to be confused with jQuery.</li>
+                            <li>Has written jQuery, twice.</li>
+                            <li>Ended world hunger with the <code>$.feed()</code> plugin.</li>
+                            <li>Inspired Benji to research and become a jQuery expert.</li>
+                        </ul>
 
-const obj = makeObj('hello', 42, true); 
-// type of obj = {foo: string, bar: number, baz: boolean}
-    </code></pre>
-                    </section>
-                    <section>
-                        <aside class="notes">
-                            <ul>
-                                <li>The idea of the first example is the second inferred parameter, which relies on the first</li>
-                                <li>The idea of the second example is passing the first inferred parameter to the second</li>
-                                <li>A decorator is a function that accepts a class and returns a class</li>
-                            </ul>
-                        </aside>
-                        <h3>Are you ready?</h3>
-                        <pre><code data-trim data-noescape class="typescript fragment">
-interface ReactWrapper {
-    &lt;Props, CompCtr extends ComponentClass&lt;Props>>(cls: CompCtr): CompCtr;
-}
-
-function apiWrapper(...apiNames: string[]): ReactWrapper {
-    // return decorator here
-}
-
-const WrappedComponent = apiWrapper('foo', 'bar', 'baz')(
-    class PersonComp extends Component&lt;{name: string, age: number}, void> {
-        // ...
-    }
-);
-
-// WrappedComponent accepts the same props</code></pre>
-                    </section>
-                    <section>
-                        <pre><code data-trim data-noescape class="typescript fragment">
-type MyRecord&lt;T> = Readonly&lt;T> &amp; {
-    get&lt;K extends keyof T>(key: K): T[K],
-    set&lt;K extends keyof T>(key: K, newValue: T[K]): MyRecord&lt;T>
-}
-
-declare function MyRecord&lt;T>(obj: T): MyRecord&lt;T>;
-
-const record = MyRecord({ foo: 0, bar: 'hello' });
-const foo = record.get('foo'); // number
-const bar = record.bar; // string
-
-const newRecord = record.set('foo', <span data-title="Type '''hello''' is not assignable to type 'number'.">'hello'</span>);
-record.bar = <span data-title="Cannot assign to 'bar' because it is a constant or a read-only property.">'hello';
-</code></pre>
+                        <p><small><small>Disclaimer: No JavaScript libraries were hurt in making this list... maybe a little offended.</small></small></p>
                     </section>
                 </section>
                 <section>
