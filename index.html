@@ -234,9 +234,9 @@ let <span data-title="let z: number">z</span> = Number(x); // z: number
                         <pre><code data-trim data-noescape class="typescript">
                         
 function foo(...args: [number, string, boolean]) {
-    const <span data-title="const x: number">x</span> = args[0];
-    const <span data-title="const y: string">y</span> = args[1];
-    const <span data-title="const z: boolean">z</span> = args[2];
+    const <span data-title="const x: number">x</span> = args[0]; // number
+    const <span data-title="const y: string">y</span> = args[1]; // string
+    const <span data-title="const z: boolean">z</span> = args[2]; // boolean
 }
 
 const args: [number, string, boolean] = [42, "hello", true];
