@@ -168,10 +168,12 @@ type <span data-title="type T12 = { foo: string; bar: number; }">T12</span> = Om
                     <section>
                         <h3>Generic Inference in Conditional Types</h3>
                         <pre><code data-trim data-noescape class="typescript">
-type Awaited&lt;T> = T extends Promise&lt;infer R> ? R : T;
+type AnyFunction = (...args: any[]) => any;
+type ReturnType&lt;T extends AnyFunction> = 
+    T extends (...args: any[]) => infer R ? R : never;
 
-type <span data-title="type T12 = number">T12</span> = Awaited&lt;Promise&lt;number>>;
-type <span data-title="type T13 = string">T13</span> = Awaited&lt;string>;
+type <span data-title="type T12 = number">T12</span> = ReturnType&lt;typeof Math.random>;
+type <span data-title="type T13 = string">T13</span> = ReturnType&lt;<span class="error" data-title="Type '42' does not satisfy the constraint&#xa;'(...args: any[]) => any'.">42</span>>;
                         </code></pre>
                         <p class="fragment">Allows for neat things like the built-in <code>ReturnType&lt;T></code> type.</p>
                     </section>
