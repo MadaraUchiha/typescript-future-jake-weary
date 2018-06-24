@@ -115,6 +115,7 @@
                         <pre class="fragment"><code data-trim data-noescape class="typescript">
 type T0 = { foo: string, bar: number };
 type <span data-title="type T1 = {&#xa;  foo?: string | boolean;&#xa;  bar?: number | boolean;&#xa;}">T1</span> = { [key in T0]?: T0[key] | boolean };
+// type T1 = { foo?: string | boolean; bar?: number | boolean; }
                         </code></pre>
                         <p class="fragment">Useful when combined with generics</p>
                     </section>
@@ -127,9 +128,12 @@ type Partial&lt;T> = { [P in keyof T]?: T[P] };
 type Readonly&lt;T> = { readonly [P in keyof T]: T[P]; };
 type Pick&lt;T, K extends keyof T> = { [P in K]: T[K]; };
 
-type <span data-title="type T2 = { foo?: string; bar?: number; }">T2</span> = Partial&lt;T0>;
+type <span data-title="type T2 = { foo?: string; bar?: number; }">T2</span> = Partial&lt;T0>; 
+// type T2 = { foo?: string; bar?: number; }
 type <span data-title="type T3 = { &#xa;  readonly foo: string;&#xa;  readonly bar: number;&#xa;}">T3</span> = Readonly&lt;T0>;
+// type T3 = { readonly foo: string; readonly bar: number; }
 type <span data-title="type T4 = { bar: number; }">T4</span> = Pick&lt;T0, 'bar'>;
+// type T4 = { bar: number; }
                         </code></pre>
                         <p class="fragment">You can easily make your own to suit your needs!</p>
                     </section>
@@ -137,8 +141,8 @@ type <span data-title="type T4 = { bar: number; }">T4</span> = Pick&lt;T0, 'bar'
                         <h3>Conditional Types</h3>
                         <pre><code data-trim data-noescape class="typescript">
 type T5&lt;T> = T extends number ? string : boolean;
-type <span data-title="type T6 = string">T6</span> = T5&lt;6>;
-type <span data-title="type T7 = boolean">T7</span> = T5&lt;'hello'>;
+type <span data-title="type T6 = string">T6</span> = T5&lt;6>; // string
+type <span data-title="type T7 = boolean">T7</span> = T5&lt;'hello'>; // boolean
                         </code></pre>
                     </section>
                     <section>
@@ -150,8 +154,8 @@ type Diff&lt;T, U> = T extends U ? never : T;
 // Remove types from T that are not assignable to U
 type Filter&lt;T, U> = T extends U ? T : never;
 
-type <span data-title="type T8 = 'b' | 'd'">T8</span> = Diff&lt;'a' | 'b' | 'c' | 'd', 'a' | 'c' | 'f'>;
-type <span data-title="type T9 = 'a' | 'c'">T9</span> = Filter&lt;'a' | 'b' | 'c' | 'd', 'a' | 'c' | 'f'>;
+type <span data-title="type T8 = 'b' | 'd'">T8</span> = Diff&lt;'a' | 'b' | 'c' | 'd', 'a' | 'c' | 'f'>; // 'b' | 'd'
+type <span data-title="type T9 = 'a' | 'c'">T9</span> = Filter&lt;'a' | 'b' | 'c' | 'd', 'a' | 'c' | 'f'>; // 'a' | 'c'
                         </code></pre>
                         <div class="fragment">
                             <p>which in turn can become even more useful</p>
@@ -161,7 +165,7 @@ type NonNullable&lt;T> = Diff&lt;T, null | undefined>;
 type OmitNulls&lt;T> = { [key in keyof T]: NonNullable&lt;T[key]> };
 
 type T11 = { foo: string | null, bar: number | null };
-type <span data-title="type T12 = { foo: string; bar: number; }">T12</span> = OmitNulls&lt;T11>;
+type <span data-title="type T12 = { foo: string; bar: number; }">T12</span> = OmitNulls&lt;T11>; // { foo: string; bar: number; }
                             </code></pre>
                         </div>
                     </section>
@@ -172,8 +176,8 @@ type AnyFunction = (...args: any[]) => any;
 type ReturnType&lt;T extends AnyFunction> = 
     T extends (...args: any[]) => infer R ? R : never;
 
-type <span data-title="type T12 = number">T12</span> = ReturnType&lt;typeof Math.random>;
-type <span data-title="type T13 = string">T13</span> = ReturnType&lt;<span class="error" data-title="Type '42' does not satisfy the constraint&#xa;'(...args: any[]) => any'.">42</span>>;
+type <span data-title="type T12 = number">T12</span> = ReturnType&lt;typeof Math.random>; // number
+type <span data-title="type T13 = string">T13</span> = ReturnType&lt;<span class="error" data-title="Type '42' does not satisfy the constraint&#xa;'(...args: any[]) => any'.">42</span>>; // compilation error
                         </code></pre>
                         <p class="fragment">Allows for neat things like the built-in <code>ReturnType&lt;T></code> type.</p>
                     </section>
@@ -201,15 +205,16 @@ type <span data-title="type T13 = string">T13</span> = ReturnType&lt;<span class
                         <pre><code data-trim data-noescape class="typescript">
 let x: unknown; // unknown always considered initialized.
 if (Array.isArray(x)) {
-    <span data-title="let x: any[]">x</span>;
+    <span data-title="let x: any[]">x</span>; // x: any[]
 } else if (x instanceof Promise) {
-    <span data-title="let x: Promise&lt;any&gt;">x</span>;
+    <span data-title="let x: Promise&lt;any&gt;">x</span>; // x: Promise&lt;any>
 } else if (x === true) {
-    <span data-title="let x: unknown">x</span>; // wat, submitted <a target="_blank" href="https://github.com/Microsoft/TypeScript/issues/25172">an issue</a>.
+    <span data-title="let x: unknown">x</span>; // x: unknown... wat, submitted <a target="_blank" href="https://github.com/Microsoft/TypeScript/issues/25172">an issue</a>.
 }
-let <span data-title="let y: string">y</span> = String(x);
-let <span data-title="let z: number">z</span> = Number(x);
+let <span data-title="let y: string">y</span> = String(x); // y: string
+let <span data-title="let z: number">z</span> = Number(x); // z: number
 
+// All compilation errors.
 <span class="error" data-title="[ts] Object is of type 'unknown'.&#xa;let x: unknown">x</span> > 5;
 <span class="error" data-title="[ts] Object is of type 'unknown'.&#xa;let x: unknown">x</span>.foo;
 <span class="error" data-title="[ts] Object is of type 'unknown'.&#xa;let x: unknown">x</span>[5];
@@ -270,12 +275,12 @@ class Component extends ReactComponent {
 }
 
 const a = &lt;Component foo={12} bar="yes" baz="yeah" />;
-const b = &lt;<span class="error" data-title="Missing required prop 'bar'">Component foo={12}</span> />;
+const b = &lt;<span class="error" data-title="Missing required prop 'baz'">Component foo={12}</span> />; // baz is missing, marked required
 const c = &lt;Component bar="yes" baz="yeah" />;
-const d = &lt;<span class="error" data-title="Invalid prop 'bat'">Component bar="yes" baz="yo" bat="ohno"</span> />;
+const d = &lt;<span class="error" data-title="Invalid prop 'bat'">Component bar="yes" baz="yo" bat="ohno"</span> />; // invalid prop bat
 // OK because bar isn't marked .isRequired
 const e = &lt;Component foo={12} bar={null} baz="cool" />;
-const f = &lt;Component foo={12} bar="yeah" <span class="error" data-title="Prop 'baz' marked isRequired, cannot be null">baz={null}</span> />;
+const f = &lt;Component foo={12} bar="yeah" <span class="error" data-title="Prop 'baz' marked isRequired, cannot be null">baz={null}</span> />; // baz is required
                         </code></pre>
                     </section>
                     <section>
